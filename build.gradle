@@ -1,0 +1,87 @@
+buildscript {
+	ext {
+		springDependencyVersion = '2.1.0.RELEASE'
+		grpcVersion = '1.45.1'
+		protobufVersion = '3.19.4'
+		protobufGradleVersion = '0.8.18'
+		graphQLDependencyVersion = '17.3'
+		graphQLSpringBootDependencyVersion = '2.0'
+		graphQLToolDependencyVersion = '5.2.4'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath "com.google.protobuf:protobuf-gradle-plugin:${protobufGradleVersion}"
+	}
+}
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.1.0.RELEASE'
+	id 'com.google.protobuf' version '0.8.18'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+group 'com.reeinvent.backend'
+version '1.0'
+
+repositories {
+	mavenCentral()
+	flatDir {
+		dirs 'libs'
+	}
+}
+
+sourceSets {
+	main {
+		proto {
+			srcDir 'xprotos/java'
+		}
+		java {
+			// include self written and generated code
+			srcDirs 'src/main/java', 'generated-sources/main/java', 'generated-sources/main/grpc'
+		}
+	}
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:${protobufVersion}"
+	}
+	plugins {
+		grpc {
+			artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+		}
+	}
+	generateProtoTasks.generatedFilesBaseDir = 'generated-sources'
+
+	generateProtoTasks {
+		all()*.plugins {
+			grpc {}
+		}
+		ofSourceSet('main')
+	}
+}
+
+dependencies {
+	implementation "org.springframework.boot:spring-boot-starter:$springDependencyVersion"
+	implementation "org.springframework.boot:spring-boot-starter-validation:$springDependencyVersion"
+	implementation "org.springframework.boot:spring-boot-starter-web:$springDependencyVersion"
+	implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springDependencyVersion"
+	implementation "org.springframework.boot:spring-boot-starter-aop:$springDependencyVersion"
+	implementation "org.springframework.boot:spring-boot-starter-security:$springDependencyVersion"
+
+	implementation "javax.persistence:javax.persistence-api:2.2"
+	implementation "mysql:mysql-connector-java:5.1.38"
+
+	// gRPC
+	implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+	implementation "io.grpc:grpc-stub:${grpcVersion}"
+	implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+	implementation "io.grpc:grpc-netty:${grpcVersion}"
+	runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+	//common
+	implementation name: 'common-1.0'
+}
